@@ -1,0 +1,23 @@
+name: Update UPM master branch
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Update UPM master branch
+        uses: hecomi/create-upm-branch-action@main
+        with:
+          git-tag: master
+          pkg-root-dir-path: Assets
+          main-branch: master
+          upm-branch: upm

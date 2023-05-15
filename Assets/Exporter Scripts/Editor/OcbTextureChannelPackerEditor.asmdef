@@ -1,0 +1,16 @@
+{
+    "name": "OcbTextureChannelPackerEditor",
+    "rootNamespace": "OcbTextureChannelPacker",
+    "references": [
+        "GUID:a03736ca4741f4d458fe72bb0a568dc9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
