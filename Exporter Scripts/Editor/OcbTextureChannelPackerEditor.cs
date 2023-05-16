@@ -6,7 +6,7 @@ using UnityEngine;
 namespace UnityTextureChannelPacker
 {
 
-    [ExecuteInEditMode]
+    [ExecuteInEditMode] [CanEditMultipleObjects]
     [CustomEditor(typeof(OcbTextureChannelPacker))]
     public class OcbTextureChannelPackerEditor : Editor
     {
@@ -21,6 +21,8 @@ namespace UnityTextureChannelPacker
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
+
+            EditorGUI.BeginChangeCheck();
 
             // Update the UI width only on repaint events
             if (Event.current.type.Equals(EventType.Repaint))
@@ -77,6 +79,10 @@ namespace UnityTextureChannelPacker
             }
 
             GUILayout.Space(20);
+
+            // Note: doesn't support "undo"
+            if (EditorGUI.EndChangeCheck())
+                script.SetDirty();
 
         }
 
