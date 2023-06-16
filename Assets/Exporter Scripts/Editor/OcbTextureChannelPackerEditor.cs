@@ -33,16 +33,18 @@ namespace UnityTextureChannelPacker
 
             GUILayout.Space(12);
 
-            script.TextureSize = EditorGUILayout.Popup("Texture Size", script.TextureSize, textureSizes);
+            script.TextureWidth = EditorGUILayout.Popup("Texture Width", script.TextureWidth, textureSizes);
+            script.TextureHeight = EditorGUILayout.Popup("Texture Height", script.TextureHeight, textureSizes);
 
             GUILayout.Space(12);
 
-            int size = 2 << (script.TextureSize + 6);
+            int width = 2 << (script.TextureWidth + 6);
+            int height = 2 << (script.TextureHeight + 6);
 
-            RenderChannelConfig(ref script.ChannelRed, "Red Channel", size);
-            RenderChannelConfig(ref script.ChannelGreen, "Green Channel", size);
-            RenderChannelConfig(ref script.ChannelBlue, "Blue Channel", size);
-            RenderChannelConfig(ref script.ChannelAlpha, "Alpha Channel", size);
+            RenderChannelConfig(ref script.ChannelRed, "Red Channel", width, height);
+            RenderChannelConfig(ref script.ChannelGreen, "Green Channel", width, height);
+            RenderChannelConfig(ref script.ChannelBlue, "Blue Channel", width, height);
+            RenderChannelConfig(ref script.ChannelAlpha, "Alpha Channel", width, height);
 
             EditorGUILayout.BeginHorizontal();
             GUILayout.Label("Invert Channel", GUILayout.Width(EditorGUIUtility.labelWidth - 30));
@@ -88,7 +90,7 @@ namespace UnityTextureChannelPacker
 
         // Render the UI for the channel configs
         // Also the does the required base checks
-        private void RenderChannelConfig(ref ChannelConfig cfg, string title, int size)
+        private void RenderChannelConfig(ref ChannelConfig cfg, string title, int width, int height)
         {
             if (cfg.mode == MixMode.Fix)
             {
@@ -126,7 +128,7 @@ namespace UnityTextureChannelPacker
             GUILayout.Space(2);
             CheckReadableTexture(cfg.src);
             CheckUncompressedTexture(cfg.src);
-            CheckTextureSize(cfg.src, size);
+            CheckTextureSize(cfg.src, width, height);
             GUILayout.Space(18);
         }
 
@@ -135,14 +137,15 @@ namespace UnityTextureChannelPacker
             "UNT0017:SetPixels invocation is slow", Justification = "Editor Only")]
         private void ExportPackedTexture(OcbTextureChannelPacker script, string path)
         {
-            int size = 2 << (script.TextureSize + 6);
-            Texture2D packed = new Texture2D(size, size,
+            int width = 2 << (script.TextureWidth + 6);
+            int height = 2 << (script.TextureHeight + 6);
+            Texture2D packed = new Texture2D(width, height,
                 TextureFormat.RGBA32, true);
-            Color[] to = new Color[size * size];
-            ApplyPixelChanges(script.ChannelRed, ref to, size, new Color(1, 0, 0, 0));
-            ApplyPixelChanges(script.ChannelGreen, ref to, size, new Color(0, 1, 0, 0));
-            ApplyPixelChanges(script.ChannelBlue, ref to, size, new Color(0, 0, 1, 0));
-            ApplyPixelChanges(script.ChannelAlpha, ref to, size, new Color(0, 0, 0, 1));
+            Color[] to = new Color[width * height];
+            ApplyPixelChanges(script.ChannelRed, ref to, width, height, new Color(1, 0, 0, 0));
+            ApplyPixelChanges(script.ChannelGreen, ref to, width, height, new Color(0, 1, 0, 0));
+            ApplyPixelChanges(script.ChannelBlue, ref to, width, height, new Color(0, 0, 1, 0));
+            ApplyPixelChanges(script.ChannelAlpha, ref to, width, height, new Color(0, 0, 0, 1));
             packed.SetPixels(to);
             packed.Apply(true, false);
             var bytes = packed.EncodeToPNG();
@@ -151,7 +154,7 @@ namespace UnityTextureChannelPacker
 
         // Generate all channels from given textures and their configs
         private void ApplyPixelChanges(ChannelConfig cfg,
-            ref Color[] dst, int size, Color factor)
+            ref Color[] dst, int width, int height, Color factor)
         {
             // Mode for fixed value or if texture is not given
             if (cfg.mode == MixMode.Fix || cfg.src == null)
@@ -170,11 +173,12 @@ namespace UnityTextureChannelPacker
             }
             else
             {
-                var from = cfg.src.GetPixels(MipMapOffset(cfg.src.width, size));
+                var from = cfg.src.GetPixels(MipMapOffset(cfg.src.width, width));
                 if (from.Length != dst.Length) throw new Exception("Size mismatch");
-                if (cfg.src.width != cfg.src.height) throw new Exception("Ratio mismatch");
                 if ((cfg.src.width & -cfg.src.width) != cfg.src.width) throw
-                        new Exception("Texture size is not a power of two");
+                        new Exception("Texture width is not a power of two");
+                if ((cfg.src.height & -cfg.src.height) != cfg.src.height) throw
+                        new Exception("Texture height is not a power of two");
                 for (int i = 0; i < dst.Length; i += 1)
                 {
                     float saturation; Color sample = new Color(
@@ -254,14 +258,14 @@ namespace UnityTextureChannelPacker
         // We take from mipmap if texture is bigger
         // Otherwise we must upscale source texture
         // Note: better to do this in e.g. photoshop?
-        private void CheckTextureSize(Texture2D texture, int size)
+        private void CheckTextureSize(Texture2D texture, int width, int height)
         {
             if (texture == null) return;
-            if (texture.width >= size && texture.height >= size) return;
-            if (GUILayout.Button($"Fix: Upscale to {size}", GUILayout.Height(24)))
+            if (texture.width >= width && texture.height >= height) return;
+            if (GUILayout.Button($"Fix: Upscale to {width}x{height}", GUILayout.Height(24)))
             {
                 var path = AssetDatabase.GetAssetPath(texture);
-                texture = ScaleTexture(texture, size, size);
+                texture = ScaleTexture(texture, width, height);
                 var bytes = texture.EncodeToPNG();
                 File.WriteAllBytes(path, bytes);
                 AssetDatabase.Refresh();

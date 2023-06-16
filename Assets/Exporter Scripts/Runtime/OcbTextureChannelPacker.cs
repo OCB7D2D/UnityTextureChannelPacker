@@ -27,7 +27,9 @@ namespace UnityTextureChannelPacker
     {
 
         [HideInInspector]
-        public int TextureSize = 4;
+        public int TextureWidth = 4;
+        [HideInInspector]
+        public int TextureHeight = 4;
 
         [HideInInspector]
         public ChannelConfig ChannelRed;
