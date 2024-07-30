@@ -1,7 +1,7 @@
 {
     "name": "ch.ocbnet.texturechannelpacker",
     "displayName": "OCB Texture Channel Packer",
-    "version": "0.1.2",
+    "version": "0.2.0",
     "unity": "2018.3",
     "description": "Create textures by mixing channels from other textures."
 }
